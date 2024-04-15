@@ -525,7 +525,7 @@ def upload_reel_multi_time(paths, caption):
     def upload_reel_job(path, caption):
         try:
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            print(f"\r\033[36mCurrent Time: {current_time}")
+            print(f"\r\033[36mCurrent Time: {current_time}", end="")
             print(f"Uploading Media from path: {path}")
             # Assuming cl is your instagrapi client
             cl.clip_upload(path=path, caption=caption)
@@ -539,7 +539,7 @@ def upload_reel_multi_time(paths, caption):
         for i, path in enumerate(paths_list):
             try:
                 current_time = datetime.datetime.now().strftime("%H:%M:%S")
-                print(f"\r\033[36mCurrent Time: {current_time}")
+                print(f"\r\033[36mCurrent Time: {current_time}", end="")
                 scheduled_time = upload_times[i]
                 schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), caption)
             except IndexError:
