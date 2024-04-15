@@ -87,6 +87,22 @@ def load_last_user_details():
     except FileNotFoundError:
         return None, None
 
+def load_captions_details():
+    try:
+        with open("captions.json", "r") as f:
+            data = json.load(f)
+            return data["captions"]
+    except FileNotFoundError:
+        return None, None
+
+def load_videos_paths():
+	try:
+			with open("videos_path.json", "r") as f:
+					data = json.load(f)
+					return data["videos_path"]
+	except FileNotFoundError:
+			return None, None
+
 #process
 
 # Modify the login section to include saving last user details
@@ -544,37 +560,101 @@ def upload_reel_multi(paths, caption):
 #     except Exception as e:
 #         print(f"\n\033[31m Error : {str(e)}")
 
-def upload_reel_multi_time(paths, caption):
+# def upload_reel_multi_time(paths, caption):
+#     def upload_reel_job(path, caption):
+#         try:
+#             current_time = datetime.datetime.now().strftime("%H:%M:%S")
+#             print(f"\r\033[36mCurrent Time: {current_time}", end="")
+#             print(f"Uploading Media from path: {path}")
+#             # Assuming cl is your instagrapi client
+#             cl.clip_upload(path=path, caption=caption)
+#             print(f"Status: Uploaded !")
+#         except instagrapi.exceptions.MediaError:
+#             print("\n\033[31mStatus: Media Not Uploaded !")
+
+#     try:
+#         paths_list = paths.split(",")
+#         upload_times = ["08:00", "13:00", "18:00", "22:00", "01:10"]
+#         for i, path in enumerate(paths_list):
+#             try:
+#                 current_time = datetime.datetime.now().strftime("%H:%M:%S")
+#                 print(f"\r\033[36mCurrent Time: {current_time}", end="")
+#                 scheduled_time = upload_times[i]
+#                 schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), caption)
+#             except IndexError:
+#                 print("\n\033[31mError: Not enough upload times provided for all videos.")
+#                 break
+#         while True:
+#             current_time = datetime.datetime.now().strftime("%H:%M:%S")
+#             print(f"\r\033[36mCurrent Time: {current_time}", end="")
+#             schedule.run_pending()
+#             time.sleep(1)
+#     except Exception as e:
+#         print(f"\n\033[31mError : {str(e)}")
+
+def upload_reel_multi_time(paths_input, caption_input):
     def upload_reel_job(path, caption):
         try:
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
             print(f"\r\033[36mCurrent Time: {current_time}", end="")
-            print(f"Uploading Media from path: {path}")
-            # Assuming cl is your instagrapi client
+            print(f" Uploading Media from path: {path}")
+            # Assuming 'cl' is your instagrapi client
             cl.clip_upload(path=path, caption=caption)
-            print(f"Status: Uploaded !")
+            print(f" Status: Uploaded !")
         except instagrapi.exceptions.MediaError:
             print("\n\033[31mStatus: Media Not Uploaded !")
 
     try:
-        paths_list = paths.split(",")
-        upload_times = ["08:00", "13:00", "18:00", "22:00", "01:10"]
-        for i, path in enumerate(paths_list):
-            try:
-                current_time = datetime.datetime.now().strftime("%H:%M:%S")
-                print(f"\r\033[36mCurrent Time: {current_time}", end="")
-                scheduled_time = upload_times[i]
-                schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), caption)
-            except IndexError:
-                print("\n\033[31mError: Not enough upload times provided for all videos.")
-                break
+        paths = []
+        captions = []
+
+        # Process paths_input (either from file or manual input)
+        if paths_input.lower() == 'file':
+            # Load video paths from a JSON file
+            with open('./videos_path.json', 'r') as file:
+                data = json.load(file)
+                if 'videos_path' in data:
+                    paths = data['videos_path']
+        else:
+            # Manual input of comma-separated video URLs
+            paths = paths_input.split(",")
+
+        # Process caption_input (either from file or manual input)
+        if caption_input.lower() == 'file':
+            # Load captions from a file (assuming it's a JSON file with a "captions" list)
+            with open('./captions.json', 'r') as file:
+                captions_data = json.load(file)
+                if 'captions' in captions_data:
+                    captions = [item['text'] for item in captions_data['captions']]
+        else:
+            # Manual input of a single caption to be used for all videos
+            caption = caption_input
+            captions = [caption] * len(paths)  # Use the same caption for all videos
+
+        # Validate paths and captions
+        if not paths:
+            print("\n\033[31mError: No video paths found.")
+            return
+        if not captions:
+            print("\n\033[31mError: No captions found.")
+            return
+
+        # Schedule uploads for each video path with corresponding captions
+        upload_times = ["08:00", "13:00", "18:00", "22:00", "23:17"]
+        for i, path in enumerate(paths):
+            if i < len(captions):
+                scheduled_time = upload_times[i % len(upload_times)]  # Use modulo to cycle through upload_times
+                schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), captions[i])
+
+        # Run the scheduled jobs continuously
         while True:
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
             print(f"\r\033[36mCurrent Time: {current_time}", end="")
             schedule.run_pending()
             time.sleep(1)
+
     except Exception as e:
-        print(f"\n\033[31mError : {str(e)}")
+        print(f"\n\033[31mError: {str(e)}")
 
 def upload_video(Path, Caption):
 	try:
@@ -819,11 +899,23 @@ def Main():
 		urm = upload_reel_multi(paths, caption)
 		conexit()
 
+	# elif opt == 28:
+	# 	paths = input("\n\033[33m Enter comma-separated video URLs: ")
+	# 	caption = input("\n\033[33m Enter caption: ")
+	# 	urmt = upload_reel_multi_time(paths, caption)
+	# 	conexit()
+
 	elif opt == 28:
-		paths = input("\n\033[33m Enter comma-separated video URLs: ")
-		caption = input("\n\033[33m Enter caption: ")
-		urmt = upload_reel_multi_time(paths, caption)
-		conexit()
+			paths_input_option = input("\n\033[33m Use video paths from file? (file/manual): ")
+			caption_input_option = input("\n\033[33m Use captions from file? (file/manual): ")
+			if caption_input_option.lower() == 'manual':
+					caption_text = input("\n\033[33m Enter caption to use for all videos: ")
+					upload_reel_multi_time(paths_input_option, caption_text)
+			else:
+					upload_reel_multi_time(paths_input_option, caption_input_option)
+			conexit()
+
+
 
 	elif opt == 00:
 		time.sleep(0.5)
