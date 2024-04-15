@@ -1,6 +1,6 @@
 #import
 
-import os, sys, subprocess, importlib.util, time, schedule, tqdm, datetime
+import os, sys, subprocess, importlib.util, time, schedule, tqdm, datetime, json
 
 #req
 
@@ -73,15 +73,38 @@ os.system('clear')
 print(InsPi)
 time.sleep(1)
 
+# Define a function to save last used login details
+def save_last_user_details(username, password):
+    with open("last_user.json", "w") as f:
+        json.dump({"username": username, "password": password}, f)
+
+# Define a function to load last used login details
+def load_last_user_details():
+    try:
+        with open("last_user.json", "r") as f:
+            data = json.load(f)
+            return data["username"], data["password"]
+    except FileNotFoundError:
+        return None, None
+
 #process
 
+# Modify the login section to include saving last user details
 print("\n\033[33m [+] Login")
-usr = input("\n\033[35m username : \033[31m")
-pas = input("\033[35m password : \033[31m")
+last_username, last_password = load_last_user_details()
+# Show log that old details are being used if loaded
+if last_username and last_password:
+    print(f"\n\033[33m [+] Using last login details for {last_username} password : {last_password}")
+usr = input("\n\033[35m username : \033[31m") if not last_username else last_username
+pas = input("\033[35m password : \033[31m") if not last_password else last_password
+# Show log that old details are being used if loaded
+if last_username and last_password:
+    print(f"\n\033[33m [+] Using last login details for {last_username}")
 
 try:
 	cl.login(usr, pas)
 	print("\n\033[32m [+] Login Successful !")
+	save_last_user_details(usr, pas)  # Save login details if successful
 except instagrapi.exceptions.BadPassword:
 	print("\n\033[31m [+] Please Check Your Password !")
 	sys.exit()
