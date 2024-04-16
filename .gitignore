@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 ./last_user.json
 last_user.json
+./saved_media
+saved_media
