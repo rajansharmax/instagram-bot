@@ -1,1 +1,16 @@
-{"username": "ariainsync", "password": "Hack@Owl100"}
+{
+    "accounts": [
+        {
+            "username": "ariainsync",
+            "password": "Hack@Owl100"
+        },
+        {
+            "username": "trixksriya",
+            "password": "Rsharma@90"
+        },
+        {
+            "username": "riyatrixks",
+            "password": "Hack@Owl100"
+        }
+    ]
+}

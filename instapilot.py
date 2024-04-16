@@ -73,19 +73,30 @@ os.system('clear')
 print(InsPi)
 time.sleep(1)
 
-# Define a function to save last used login details
-def save_last_user_details(username, password):
-    with open("last_user.json", "w") as f:
-        json.dump({"username": username, "password": password}, f)
-
-# Define a function to load last used login details
 def load_last_user_details():
     try:
         with open("last_user.json", "r") as f:
             data = json.load(f)
-            return data["username"], data["password"]
+            return data.get("accounts", [])
     except FileNotFoundError:
-        return None, None
+        return []
+
+# Function to save last used login details
+def save_last_user_details(username, password):
+    try:
+        with open("last_user.json", "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {"accounts": []}
+
+    # Check if the account already exists in the list
+    updated_accounts = [{"username": user["username"], "password": user["password"]} for user in data["accounts"]]
+
+    if {"username": username, "password": password} not in updated_accounts:
+        updated_accounts.append({"username": username, "password": password})
+
+    with open("last_user.json", "w") as f:
+        json.dump({"accounts": updated_accounts}, f, indent=4)
 
 def load_captions_details():
     try:
@@ -105,17 +116,42 @@ def load_videos_paths():
 
 #process
 
-# Modify the login section to include saving last user details
-print("\n\033[33m [+] Login")
-last_username, last_password = load_last_user_details()
-# Show log that old details are being used if loaded
-if last_username and last_password:
-    print(f"\n\033[33m [+] Using last login details for {last_username} password : {last_password}")
-usr = input("\n\033[35m username : \033[31m") if not last_username else last_username
-pas = input("\033[35m password : \033[31m") if not last_password else last_password
-# Show log that old details are being used if loaded
-if last_username and last_password:
-    print(f"\n\033[33m [+] Using last login details for {last_username}")
+# Main script logic
+print("\n[+] Login")
+
+# Prompt to load last user details
+use_last_details = input("\nLoad last user details (y/n): ").strip().lower()
+
+if use_last_details == 'y':
+    # Load and display list of accounts
+    accounts = load_last_user_details()
+
+    if accounts:
+        print("\n[+] Accounts with last login details:")
+        for idx, account in enumerate(accounts):
+            print(f"{idx + 1}. {account['username']}")
+
+        # Prompt user to select an account
+        account_choice = input("\nSelect account by number: ").strip()
+
+        try:
+            selected_index = int(account_choice) - 1
+            if 0 <= selected_index < len(accounts):
+                usr = accounts[selected_index]['username']
+                pas = accounts[selected_index]['password']
+                print(f"\n[+] Using last login details for {usr}")
+            else:
+                usr = input("\nusername: ")
+                pas = input("password: ")
+        except ValueError:
+            usr = input("\nusername: ")
+            pas = input("password: ")
+    else:
+        usr = input("\nusername: ")
+        pas = input("password: ")
+else:
+    usr = input("\nusername: ")
+    pas = input("password: ")
 
 try:
 	cl.login(usr, pas)
@@ -518,80 +554,6 @@ def upload_reel_multi(paths, caption):
     except Exception as e:
         print(f"\n\033[31m Error : {str(e)}")
 
-# def upload_reel_multi_time(paths, caption):
-#     try:
-#         paths_list = paths.split(",")
-#         upload_times = ["08:00", "13:00", "18:00", "22:00"]
-#         for i, path in enumerate(paths_list):
-#             try:
-#                 scheduled_time = upload_times[i]
-#                 schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), caption)
-#             except IndexError:
-#                 print("\n\033[31m Error: Not enough upload times provided for all videos.")
-#                 break
-#         while True:
-#             schedule.run_pending()
-#             time.sleep(1)
-#     except Exception as e:
-#         print(f"\n\033[31m Error : {str(e)}")
-
-# def upload_reel_multi_time(paths, caption):
-#     def upload_reel_job(path, caption):
-#         try:
-#             print(f"\n\033[36m Uploading Media...")
-#             cl.clip_upload(path=path, caption=caption)
-#             print(f" Status : Uploaded !")
-#         except instagrapi.exceptions.MediaError:
-#             print("\n\033[31m Status : Media Not Uploaded !")
-
-#     try:
-#         paths_list = paths.split(",")
-#         upload_times = ["08:00", "13:00", "18:00", "22:00", "00:28"]
-#         for i, path in enumerate(paths_list):
-#             try:
-#                 scheduled_time = upload_times[i]
-#                 schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), caption)
-#             except IndexError:
-#                 print("\n\033[31m Error: Not enough upload times provided for all videos.")
-#                 break
-#         while True:
-#             schedule.run_pending()
-#             time.sleep(1)
-#     except Exception as e:
-#         print(f"\n\033[31m Error : {str(e)}")
-
-# def upload_reel_multi_time(paths, caption):
-#     def upload_reel_job(path, caption):
-#         try:
-#             current_time = datetime.datetime.now().strftime("%H:%M:%S")
-#             print(f"\r\033[36mCurrent Time: {current_time}", end="")
-#             print(f"Uploading Media from path: {path}")
-#             # Assuming cl is your instagrapi client
-#             cl.clip_upload(path=path, caption=caption)
-#             print(f"Status: Uploaded !")
-#         except instagrapi.exceptions.MediaError:
-#             print("\n\033[31mStatus: Media Not Uploaded !")
-
-#     try:
-#         paths_list = paths.split(",")
-#         upload_times = ["08:00", "13:00", "18:00", "22:00", "01:10"]
-#         for i, path in enumerate(paths_list):
-#             try:
-#                 current_time = datetime.datetime.now().strftime("%H:%M:%S")
-#                 print(f"\r\033[36mCurrent Time: {current_time}", end="")
-#                 scheduled_time = upload_times[i]
-#                 schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), caption)
-#             except IndexError:
-#                 print("\n\033[31mError: Not enough upload times provided for all videos.")
-#                 break
-#         while True:
-#             current_time = datetime.datetime.now().strftime("%H:%M:%S")
-#             print(f"\r\033[36mCurrent Time: {current_time}", end="")
-#             schedule.run_pending()
-#             time.sleep(1)
-#     except Exception as e:
-#         print(f"\n\033[31mError : {str(e)}")
-
 def upload_reel_multi_time(paths_input, caption_input):
     def upload_reel_job(path, caption):
         try:
@@ -599,7 +561,7 @@ def upload_reel_multi_time(paths_input, caption_input):
             print(f"\r\033[36mCurrent Time: {current_time}", end="")
             print(f" Uploading Media from path: {path}")
             # Assuming 'cl' is your instagrapi client
-            cl.clip_upload(path=path, caption=caption)
+            cl.clip_upload(path=path, caption=caption, thumbnail=path + '.jpg')
             print(f" Status: Uploaded !")
         except instagrapi.exceptions.MediaError:
             print("\n\033[31mStatus: Media Not Uploaded !")
@@ -640,7 +602,7 @@ def upload_reel_multi_time(paths_input, caption_input):
             return
 
         # Schedule uploads for each video path with corresponding captions
-        upload_times = ["08:00", "13:00", "18:00", "22:00", "23:17"]
+        upload_times = ["08:00", "13:00", "18:00", "22:00", "23:41"]
         for i, path in enumerate(paths):
             if i < len(captions):
                 scheduled_time = upload_times[i % len(upload_times)]  # Use modulo to cycle through upload_times
