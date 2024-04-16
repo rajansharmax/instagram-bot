@@ -10,8 +10,17 @@ def decrypt_data(cipher, encrypted_data):
     decrypted_data = cipher.decrypt(encrypted_data.encode()).decode()
     return decrypted_data
 
+def load_keyfrom_file():
+    try:
+        with open("key.json", "r") as f:
+            data = json.load(f)
+            return data
+    except FileNotFoundError:
+        return []
+
+# print("Decryption Script" + load_keyfrom_file())
 # Load encryption key from a secure location (keep this secure)
-key = b'UShHwgnibjTYJ41tIoSlaT6wQIlPeQMvm-O22yuoF-c='  # Replace with your encryption key
+key = load_keyfrom_file()
 
 # Initialize a Fernet cipher with the encryption key
 cipher = initialize_cipher(key)
