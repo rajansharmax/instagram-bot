@@ -1,6 +1,15 @@
 #import
 
-import os, sys, subprocess, importlib.util, time, schedule, tqdm, datetime, json
+import datetime
+import importlib.util
+import json
+import os
+import subprocess
+import sys
+import time
+
+import schedule
+import tqdm
 
 #req
 
@@ -66,6 +75,7 @@ for package_name in package_names:
 
 import instagrapi
 from instagrapi import Client
+
 cl = Client()
 
 time.sleep(1)
@@ -234,6 +244,23 @@ def follow_user_list(usernames):
 		print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
 		sys.exit()
 
+def follow_user_listv2(usernames):
+    try:
+        print(f"\n\033[36m Total Users : {len(usernames)}")
+        print(f"\n\033[36m Trying To Follow Users...")
+
+        for username in usernames:
+            try:
+                user_id = cl.user_id_from_username(username)
+                cl.user_follow(user_id)
+                print(f"\n\033[32m User Followed : {username}")
+                startSleepLoader(60)
+            except Exception as e:
+                print(f"\n\033[31m Error : {e}")
+    except KeyboardInterrupt:
+        print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
+        sys.exit()
+
 def unfollow_user_list(usernames):
 	try:
 		user_id = [cl.user_id_from_username(user) for user in usernames]
@@ -253,6 +280,23 @@ def unfollow_user_list(usernames):
 	except KeyboardInterrupt:
 		print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
 		sys.exit()
+
+def unfollow_user_listv2(usernames):
+    try:
+        print(f"\n\033[36m Total Users : {len(usernames)}")
+        print(f"\n\033[36m Trying To UnFollow Users...")
+
+        for username in usernames:
+            try:
+                user_id = cl.user_id_from_username(username)
+                cl.user_unfollow(user_id)
+                print(f"\n\033[32m User unFollowed : {username}")
+                startSleepLoader(60)
+            except Exception as e:
+                print(f"\n\033[31m Error : {e}")
+    except KeyboardInterrupt:
+        print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
+        sys.exit()
 
 def unfollow_user(target):
 	try:
@@ -739,7 +783,7 @@ def Main():
  │ [6] Unfollow All User              │ [26] Comment                       │
  │ [7] Follow User Following          │ [27] Upload Multiple Rell          │
  │ [8] Follow User Followers          │ [28] Upload Multiple reel on Time  │
- │ [9] Get User Id From Username      │                                    │
+ │ [9] Get User Id From Username      │ [29] Follow/Unfollow User V2       │
  │ [10] Get Username From User Id     │                                    │
  │ [11] User Following Into List      │                                    │
  │ [12] User Followers Into List      │                                    │
@@ -924,6 +968,21 @@ def Main():
 			else:
 					upload_reel_multi_time(paths_input_option, caption_input_option)
 			conexit()
+
+	elif opt == 29:
+		followuserlist = input("\nLoad last user details (y/n): ").strip().lower()
+
+		if(followuserlist == "y"):
+			followuserlist = load_usernames()
+
+			followOrUnfollow = input("\nFollow users or Unfollow users (f/u): ").strip().lower()
+
+			if(followOrUnfollow == "f"):
+				ful = follow_user_listv2(followuserlist)
+				conexit()
+			else:
+				ful = unfollow_user_listv2(followuserlist)
+				conexit()
 
 
 
