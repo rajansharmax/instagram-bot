@@ -114,6 +114,18 @@ def load_videos_paths():
 	except FileNotFoundError:
 			return None, None
 
+def load_usernames():
+	try:
+			with open("usernames.json", "r") as f:
+					data = json.load(f)
+					return data["usernames"]
+	except FileNotFoundError:
+			return None, None
+
+def startSleepLoader(seconds):
+		for _ in range(seconds):
+				print(".", end="", flush=True)
+				time.sleep(1)
 #process
 
 # Main script logic
@@ -202,18 +214,38 @@ def follow(username):
 		print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
 		sys.exit()
 
-def follow_user_list(filename):
+def follow_user_list(usernames):
 	try:
-		x = filename
-		with open(x, "r") as f:
-			user_list = f.read().splitlines()
+		user_id = [cl.user_id_from_username(user) for user in usernames]
+		print(f"\n\033[36m Total Users : {len(user_id)}")
+		print("\n\033[36m Trying To Follow Users...")
 
-		user_id = [cl.user_id_from_username(user) for user in user_list]
 		for usertof in user_id:
 			try:
 				print(f"\n\033[36m Trying To Follow User : {usertof}")
 				cl.user_follow(usertof)
 				print(" User Followed !")
+				startSleepLoader(30)
+			except instagrapi.exceptions.UserNotFound:
+				print("\n\033[31m User Not Found !")
+			except instagrapi.exceptions.ClientNotFoundError:
+				print("\n\033[31m Client Not Found !")
+	except KeyboardInterrupt:
+		print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
+		sys.exit()
+
+def unfollow_user_list(usernames):
+	try:
+		user_id = [cl.user_id_from_username(user) for user in usernames]
+		print(f"\n\033[36m Total Users : {len(user_id)}")
+		print("\n\033[36m Trying To Follow Users...")
+
+		for usertof in user_id:
+			try:
+				print(f"\n\033[36m Trying To UnFollow User : {usertof}")
+				cl.user_unfollow(usertof)
+				print(" User UnFollowed !")
+				startSleepLoader(30)
 			except instagrapi.exceptions.UserNotFound:
 				print("\n\033[31m User Not Found !")
 			except instagrapi.exceptions.ClientNotFoundError:
@@ -286,6 +318,7 @@ def unfollow_all_user():
 				print(f"\n\033[36m Trying To Unfollow User : {u_to_unfollow}")
 				cl.user_unfollow(u_to_unfollow)
 				print(" User Unfollowed !")
+				startSleepLoader(60)
 			except instagrapi.exceptions.UserNotFound:
 				print("\033[31m User Not Found !")
 			except instagrapi.exceptions.ClientNotFoundError:
@@ -699,7 +732,7 @@ def Main():
 	options = '''\033[33m
  ·————————————————————————————————————·————————————————————————————————————·
  │ [1] Follow User                    │ [21] Upload Reel                   │
- │ [2] Follow User From List          │ [22] Upload Video                  │
+ │ [2] Follow/Unfollow User From List │ [22] Upload Video                  │
  │ [3] Unfollow User                  │ [23] Delete Media                  │
  │ [4] Remove Follower                │ [24] Mass Media Delete             │
  │ [5] Remove All Followers           │ [25] Media Information             │
@@ -730,9 +763,24 @@ def Main():
 		conexit()
 
 	elif opt == 2:
-		followuserlist = input("\n\033[33m file name : ")
-		ful = follow_user_list(followuserlist)
-		conexit()
+		followuserlist = input("\nLoad last user details (y/n): ").strip().lower()
+
+		if(followuserlist == "y"):
+			followuserlist = load_usernames()
+
+			followOrUnfollow = input("\nFollow users or Unfollow users (f/u): ").strip().lower()
+
+			if(followOrUnfollow == "f"):
+				ful = follow_user_list(followuserlist)
+				conexit()
+			else:
+				ful = unfollow_user_list(followuserlist)
+				conexit()
+
+		else:
+			followuserlist = input("\n\033[33m enter usernames in comman separated : ")
+			ful = follow_user_list(followuserlist)
+			conexit()
 
 	elif opt == 3:
 		unfollowuser = input("\n\033[33m username : ")
