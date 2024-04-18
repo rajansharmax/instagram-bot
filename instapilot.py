@@ -10,6 +10,7 @@ import time
 
 import schedule
 import tqdm
+import random
 
 #req
 
@@ -58,6 +59,11 @@ time.sleep(1)
 print("\n\033[35m[+] Checking Requirements \n")
 time.sleep(2)
 
+def next_proxy():
+		with open("proxies.txt") as f:
+				proxies = f.read().splitlines()
+				return random.choice(proxies)
+
 for package_name in package_names:
         if importlib.util.find_spec(package_name):
                 print(f"\n\033[32m[+] {package_name} Is Installed ;)\n")
@@ -76,8 +82,15 @@ for package_name in package_names:
 import instagrapi
 from instagrapi import Client
 
-cl = Client()
-
+while True:
+    proxy = next_proxy()
+    try:
+        cl = Client(proxy=proxy)
+        # If the client is successfully initialized with the proxy, break the loop
+        break
+    except Exception as e:
+        print(f"Proxy {proxy} failed: {str(e)}")
+        continue
 time.sleep(1)
 os.system('clear')
 print(InsPi)
