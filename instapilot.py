@@ -679,7 +679,7 @@ def upload_reel_multi_time(paths_input, caption_input):
             return
 
         # Schedule uploads for each video path with corresponding captions
-        upload_times = ["08:00", "13:00", "18:00", "22:00", "23:41"]
+        upload_times = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00"]
         for i, path in enumerate(paths):
             if i < len(captions):
                 scheduled_time = upload_times[i % len(upload_times)]  # Use modulo to cycle through upload_times
