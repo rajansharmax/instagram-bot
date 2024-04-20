@@ -631,7 +631,7 @@ def upload_reel_multi(paths, caption):
     except Exception as e:
         print(f"\n\033[31m Error : {str(e)}")
 
-def upload_reel_multi_time(paths_input, caption_input):
+def upload_reel_multi_time(paths_input, caption_input, time_input):
     def upload_reel_job(path, caption):
         try:
             current_time = datetime.datetime.now().strftime("%H:%M:%S")
@@ -642,6 +642,49 @@ def upload_reel_multi_time(paths_input, caption_input):
             print(f" Status: Uploaded !")
         except instagrapi.exceptions.MediaError:
             print("\n\033[31mStatus: Media Not Uploaded !")
+
+    def display_times():
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        next_job = schedule.next_run()
+        last_job = schedule.get_jobs()[-1].next_run if schedule.get_jobs() else None
+
+        display_str = f"\r\033[36mCurrent Time: {current_time}"
+        if last_job:
+            last_time = last_job.strftime("%Y-%m-%d %H:%M:%S")
+            display_str += f" | Last Reel Upload Time: {last_time}"
+        if next_job:
+            next_time = next_job.strftime("%Y-%m-%d %H:%M:%S")
+            display_str += f" | Next Reel Upload Time: {next_time}"
+
+        # Calculate the length of the display string to clear the line properly
+        max_line_length = max(len(display_str), len("\033[36mCurrent Time: " + current_time))
+        print(display_str.ljust(max_line_length), end="")
+
+    def get_next_upload_time():
+        # Get the next scheduled job
+        next_job = schedule.next_run()
+        if next_job:
+            next_time = next_job.strftime("%Y-%m-%d %H:%M:%S")
+            print(f"\r\033[36mNext Reel Upload Time: {next_time}", end="")
+
+    def get_last_upload_time():
+        all_jobs = schedule.get_jobs()
+        if all_jobs:
+            last_job = all_jobs[-1]
+            last_time = last_job.next_run.strftime("%Y-%m-%d %H:%M:%S")
+            print(f"\r\033[36mLast Reel Upload Time: {last_time}", end="")
+
+    def get_all_upload_times():
+        all_jobs = schedule.get_jobs()
+        current_time = datetime.datetime.now()
+
+        print("\n\033[36mScheduled Upload Times:")
+        for job in all_jobs:
+            scheduled_time = job.next_run
+            if scheduled_time > current_time:
+                print(f"  {scheduled_time.strftime('%Y-%m-%d %H:%M:%S')} (Future)")
+            else:
+                print(f"  {scheduled_time.strftime('%Y-%m-%d %H:%M:%S')} (Past)")
 
     try:
         paths = []
@@ -678,17 +721,24 @@ def upload_reel_multi_time(paths_input, caption_input):
             print("\n\033[31mError: No captions found.")
             return
 
-        # Schedule uploads for each video path with corresponding captions
-        upload_times = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00"]
+        # Convert time_input to minutes
+        try:
+            upload_interval = int(time_input)
+        except ValueError:
+            print("\n\033[31mError: Invalid upload interval.")
+            return
+
+        # Schedule uploads at regular intervals
         for i, path in enumerate(paths):
             if i < len(captions):
-                scheduled_time = upload_times[i % len(upload_times)]  # Use modulo to cycle through upload_times
-                schedule.every().day.at(scheduled_time).do(upload_reel_job, path.strip(), captions[i])
+                schedule.every(upload_interval).minutes.do(upload_reel_job, path.strip(), captions[i])
+
+        # Display all scheduled upload times (before and after current time)
+        # get_all_upload_times()
 
         # Run the scheduled jobs continuously
         while True:
-            current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            print(f"\r\033[36mCurrent Time: {current_time}", end="")
+            display_times()
             schedule.run_pending()
             time.sleep(1)
 
@@ -962,11 +1012,12 @@ def Main():
 	elif opt == 28:
 			paths_input_option = input("\n\033[33m Use video paths from file? (file/manual): ")
 			caption_input_option = input("\n\033[33m Use captions from file? (file/manual): ")
+			upload_time = input("\n\033[33m Enter upload time in minutes: ")
 			if caption_input_option.lower() == 'manual':
 					caption_text = input("\n\033[33m Enter caption to use for all videos: ")
-					upload_reel_multi_time(paths_input_option, caption_text)
+					upload_reel_multi_time(paths_input_option, caption_text, upload_time)
 			else:
-					upload_reel_multi_time(paths_input_option, caption_input_option)
+					upload_reel_multi_time(paths_input_option, caption_input_option, upload_time)
 			conexit()
 
 	elif opt == 29:
