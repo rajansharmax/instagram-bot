@@ -10,6 +10,7 @@ import time
 
 import schedule
 import tqdm
+import threading
 
 #req
 
@@ -34,12 +35,12 @@ package_names = ["instagrapi", "requests"]
 
 InsPi = '''
 \033[32m
- .___                 __        __________.__.__          __ 
- |   | ____   _______/  |______ \______   \__|  |   _____/  |_ 
- |   |/    \ /  ___/\   __\__  \ |     ___/  |  |  /  _ \   __\ 
- |   |   |  \/___ \  |  |  / __ \|    |   |  |  |_(  <_> )  | 
- |___|___|  /____  > |__| (____  /____|   |__|____/\____/|__| 
-          \/     \/            \/ 
+ .___                 __        __________.__.__          __
+ |   | ____   _______/  |______ \______   \__|  |   _____/  |_
+ |   |/    \ /  ___/\   __\__  \ |     ___/  |  |  /  _ \   __\
+ |   |   |  \/___ \  |  |  / __ \|    |   |  |  |_(  <_> )  |
+ |___|___|  /____  > |__| (____  /____|   |__|____/\____/|__|
+          \/     \/            \/
  <------------------------------------------------------------>
  | GitHub : rajansharmax            |       MIT License    		|
  | Instagram Automated Python Tool  |        Instagrapi       |
@@ -631,64 +632,53 @@ def upload_reel_multi(paths, caption):
     except Exception as e:
         print(f"\n\033[31m Error : {str(e)}")
 
-def upload_reel_multi_time(paths_input, caption_input, time_input):
-    def upload_reel_job(path, caption):
-        try:
-            current_time = datetime.datetime.now().strftime("%H:%M:%S")
-            print(f"\r\033[36mCurrent Time: {current_time}", end="")
-            print(f" Uploading Media from path: {path}")
-            # Assuming 'cl' is your instagrapi client
-            cl.clip_upload(path=path, caption=caption, thumbnail=path + '.jpg')
-            print(f" Status: Uploaded !")
-        except instagrapi.exceptions.MediaError:
-            print("\n\033[31mStatus: Media Not Uploaded !")
+def upload_video(Path, Caption):
+	try:
+		try:
+						print(f"\n\033[36m Uploading Media...")
+						cl.video_upload(path=Path, caption=Caption)
+						print(f" Status : Uploaded !")
+		except instagrapi.exceptions.MediaError:
+						print("\n\033[31m Status : Media Not Uploaded !")
+	except Exception as e:
+		print(f"\n\033[31m Error : {str(e)}")
 
-    def display_times():
+def upload_reel_job(path, caption):
+    try:
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        next_job = schedule.next_run()
-        last_job = schedule.get_jobs()[-1].next_run if schedule.get_jobs() else None
+        print(f"\r\033[36mCurrent Time: {current_time}", end="")
+        print(f" Uploading Media from path: {path}")
+        # Assuming 'cl' is your instagrapi client
+        cl.clip_upload(path=path, caption=caption, thumbnail=path + '.jpg')
+        print(f" Status: Uploaded !")
+    except instagrapi.exceptions.MediaError:
+        print("\n\033[31mStatus: Media Not Uploaded !")
 
-        display_str = f"\r\033[36mCurrent Time: {current_time}"
-        if last_job:
-            last_time = last_job.strftime("%Y-%m-%d %H:%M:%S")
-            display_str += f" | Last Reel Upload Time: {last_time}"
-        if next_job:
-            next_time = next_job.strftime("%Y-%m-%d %H:%M:%S")
-            display_str += f" | Next Reel Upload Time: {next_time}"
+def schedule_video_uploads(paths, captions, upload_interval_minutes):
+    index = 0
 
-        # Calculate the length of the display string to clear the line properly
-        max_line_length = max(len(display_str), len("\033[36mCurrent Time: " + current_time))
-        print(display_str.ljust(max_line_length), end="")
+    while True:
+        # Get the current video path and caption
+        path = paths[index]
+        caption = captions[index]
 
-    def get_next_upload_time():
-        # Get the next scheduled job
-        next_job = schedule.next_run()
-        if next_job:
-            next_time = next_job.strftime("%Y-%m-%d %H:%M:%S")
-            print(f"\r\033[36mNext Reel Upload Time: {next_time}", end="")
+        # Start a new thread to upload the current video
+        thread = threading.Thread(target=upload_reel_job, args=(path, caption))
+        thread.start()
 
-    def get_last_upload_time():
-        all_jobs = schedule.get_jobs()
-        if all_jobs:
-            last_job = all_jobs[-1]
-            last_time = last_job.next_run.strftime("%Y-%m-%d %H:%M:%S")
-            print(f"\r\033[36mLast Reel Upload Time: {last_time}", end="")
+        # Move to the next video (circular list)
+        index = (index + 1) % len(paths)
 
-    def get_all_upload_times():
-        all_jobs = schedule.get_jobs()
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        print(f"\r\033[36mCurrent Time: {current_time}", end="")
+        # Sleep for the upload interval (1 minute) before scheduling the next video
+        time.sleep(upload_interval_minutes * 60)
 
-        print("\n\033[36mScheduled Upload Times:")
-        for job in all_jobs:
-            scheduled_time = job.next_run
-            if scheduled_time > current_time:
-                print(f"  {scheduled_time.strftime('%Y-%m-%d %H:%M:%S')} (Future)")
-            else:
-                print(f"  {scheduled_time.strftime('%Y-%m-%d %H:%M:%S')} (Past)")
-
+def upload_reel_multi_time(paths_input, caption_input, upload_interval_minutes_str):
     try:
         paths = []
         captions = []
+        upload_interval_minutes = int(upload_interval_minutes_str)
 
         # Process paths_input (either from file or manual input)
         if paths_input.lower() == 'file':
@@ -721,38 +711,15 @@ def upload_reel_multi_time(paths_input, caption_input, time_input):
             print("\n\033[31mError: No captions found.")
             return
 
-        # Convert time_input to minutes
-        try:
-            upload_interval = int(time_input)
-        except ValueError:
-            print("\n\033[31mError: Invalid upload interval.")
-            return
-
-        # Schedule uploads at regular intervals
-        for i, path in enumerate(paths):
-            if i < len(captions):
-                schedule.every(upload_interval).minutes.do(upload_reel_job, path.strip(), captions[i])
-
-        # Display all scheduled upload times (before and after current time)
-        # get_all_upload_times()
-
-        # Run the scheduled jobs continuously
-        while True:
-            display_times()
-            schedule.run_pending()
-            time.sleep(1)
+        # Start scheduling video uploads
+        schedule_video_uploads(paths, captions, upload_interval_minutes)
 
     except Exception as e:
         print(f"\n\033[31mError: {str(e)}")
 
-def upload_video(Path, Caption):
+def repostViralReels(viralReelKey, timeToPostInterval):
 	try:
-		try:
-						print(f"\n\033[36m Uploading Media...")
-						cl.video_upload(path=Path, caption=Caption)
-						print(f" Status : Uploaded !")
-		except instagrapi.exceptions.MediaError:
-						print("\n\033[31m Status : Media Not Uploaded !")
+		cl.repost_viral_reels(viral_reel_id=viralReelKey, time_to_post_interval=timeToPostInterval)
 	except Exception as e:
 		print(f"\n\033[31m Error : {str(e)}")
 
@@ -834,7 +801,7 @@ def Main():
  │ [7] Follow User Following          │ [27] Upload Multiple Rell          │
  │ [8] Follow User Followers          │ [28] Upload Multiple reel on Time  │
  │ [9] Get User Id From Username      │ [29] Follow/Unfollow User V2       │
- │ [10] Get Username From User Id     │                                    │
+ │ [10] Get Username From User Id     │ [30] Find Viral Video Repost       │
  │ [11] User Following Into List      │                                    │
  │ [12] User Followers Into List      │                                    │
  │ [13] Like Media                    │                                    │
@@ -1035,7 +1002,12 @@ def Main():
 				ful = unfollow_user_listv2(followuserlist)
 				conexit()
 
-
+	elif opt == 30:
+		#repost viral reels
+		viralReelKey = input("\n\033[33m Enter your Viral Reel Key: ")
+		timeToPostInterval = input("\n\033[33m Enter time to post interval in minutes: ")
+		repostViralReels(viralReelKey, timeToPostInterval)
+		conexit()
 
 	elif opt == 00:
 		time.sleep(0.5)
