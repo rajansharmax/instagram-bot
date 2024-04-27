@@ -54,7 +54,7 @@ encrypted_file_path = "encrypted_last_user.json"
 with open(encrypted_file_path, "w") as f:
     json.dump(encrypted_data, f, indent=4)
 
-access_key = "key.json"
+access_key = "saved_media/key.json"
 with open(access_key, "w") as f:
     json.dump(key.decode(), f, indent=4)
 

@@ -4,6 +4,7 @@ import datetime
 import importlib.util
 import json
 import os
+import random
 import subprocess
 import sys
 import threading
@@ -723,7 +724,9 @@ def schedule_video_uploads(paths, captions, upload_interval_minutes):
         time.sleep(upload_interval_minutes * 60)
 
 
-def upload_reel_multi_time(paths_input: str, caption_input, upload_interval_minutes_str):
+def upload_reel_multi_time(
+    paths_input: str, caption_input, upload_interval_minutes_str
+):
     try:
         paths = []
         captions = []
@@ -767,11 +770,40 @@ def upload_reel_multi_time(paths_input: str, caption_input, upload_interval_minu
         print(f"\n\033[31mError: {str(e)}")
 
 
-def repostViralReels(viralReelKey, timeToPostInterval):
+def hastag_reel_repost(hashtags: str, interval_minutes: int):
     try:
-        cl.repost_viral_reels(
-            viral_reel_id=viralReelKey, time_to_post_interval=timeToPostInterval
-        )
+        # Convert the comma-separated hashtags to a list
+        tags = hashtags.split(",")
+
+        # Convert the interval to seconds
+        interval_seconds = interval_minutes * 60
+
+        # Loop indefinitely
+        while True:
+            # Randomly select a hashtag
+            tag = random.choice(tags)
+
+            # Download a reel using the selected tag
+            downloadReelUsingTag(tag)
+
+            # Sleep for the specified interval
+            time.sleep(interval_seconds)
+
+    except Exception as e:
+        print(f"\n\033[31m Error : {str(e)}")
+
+
+def downloadReelUsingTag(tag):
+    try:
+        print(f"\n\033[36m Downloading Reel Using Tag : {tag}")
+        # Retrieve reel URL from the tag
+        reels = cl.reel_feed(tag)
+        if reels:
+            reel_url = reels[0]["items"][0]["link"]
+            cl.download_reel(reel_url)  # Assuming this method downloads the reel
+            print(" Status : Downloaded !")
+        else:
+            print(" Status : No reels found with this tag.")
     except Exception as e:
         print(f"\n\033[31m Error : {str(e)}")
 
@@ -1072,12 +1104,10 @@ def Main():
                 conexit()
 
     elif opt == 30:
-        # repost viral reels
-        viralReelKey = input("\n\033[33m Enter your Viral Reel Key: ")
-        timeToPostInterval = input(
-            "\n\033[33m Enter time to post interval in minutes: "
-        )
-        repostViralReels(viralReelKey, timeToPostInterval)
+        # repost viral reels using hasttags
+        hashtags = input("\n\033[33m Enter hastags: ")
+        timeInMinutes = input("\n\033[33m Enter time in minutes: ")
+        hastag_reel_repost(hashtags, timeInMinutes)
         conexit()
 
     elif opt == 00:

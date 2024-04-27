@@ -12,7 +12,7 @@ def decrypt_data(cipher, encrypted_data):
 
 def load_keyfrom_file():
     try:
-        with open("key.json", "r") as f:
+        with open("saved_media/key.json", "r") as f:
             data = json.load(f)
             return data
     except FileNotFoundError:
