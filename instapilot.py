@@ -1063,12 +1063,6 @@ def Main():
         urm = upload_reel_multi(paths, caption)
         conexit()
 
-    # elif opt == 28:
-    # 	paths = input("\n\033[33m Enter comma-separated video URLs: ")
-    # 	caption = input("\n\033[33m Enter caption: ")
-    # 	urmt = upload_reel_multi_time(paths, caption)
-    # 	conexit()
-
     elif opt == 28:
         paths_input_option = input(
             "\n\033[33m Use video paths from file? (file/manual): "
