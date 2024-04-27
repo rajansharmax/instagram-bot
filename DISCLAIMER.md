@@ -1,4 +1,4 @@
-# TnYtCoder (GitHub) /DISCLAIMER.md
+# rajansharmax (GitHub) /DISCLAIMER.md
 
 This tool, InstaPilot, is provided for educational and research purposes only. It is not intended to be used for any activities that violate the terms of service or policies of Instagram or any other platform it interacts with. The creator of this tool disclaims any responsibility for the actions of users who choose to use it inappropriately or in violation of applicable laws and regulations.
 
