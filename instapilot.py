@@ -723,7 +723,7 @@ def schedule_video_uploads(paths, captions, upload_interval_minutes):
         time.sleep(upload_interval_minutes * 60)
 
 
-def upload_reel_multi_time(paths_input, caption_input, upload_interval_minutes_str):
+def upload_reel_multi_time(paths_input: str, caption_input, upload_interval_minutes_str):
     try:
         paths = []
         captions = []
