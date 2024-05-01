@@ -697,7 +697,8 @@ def upload_reel_job(path, caption):
         print(f"\r\033[36mCurrent Time: {current_time}", end="")
         print(f" Uploading Media from path: {path}")
         # Assuming 'cl' is your instagrapi client
-        cl.clip_upload(path=path, caption=caption, thumbnail=path + ".jpg")
+        # cl.clip_upload(path=path, caption=caption, thumbnail=path + ".jpg")
+        cl.clip_upload(path=path, caption=caption)
         print(f" Status: Uploaded !")
     except instagrapi.exceptions.MediaError:
         print("\n\033[31mStatus: Media Not Uploaded !")
