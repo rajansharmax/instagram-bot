@@ -26,10 +26,10 @@ def export_video_paths(directory_path, output_file):
     print(f"Exported video paths to '{output_file}' successfully.")
 
 # Specify the directory path containing video files
-videos_directory = "./saved_media/videos"
+videos_directory = "/home/rajansharmax/Documents/Reels/2d_animation/2d_animation"
 
 # Specify the output JSON file path
-output_json_file = "videos_path.json"
+output_json_file = "videos_path2.json"
 
 # Call the function to export video paths to JSON
 export_video_paths(videos_directory, output_json_file)

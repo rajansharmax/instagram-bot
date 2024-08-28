@@ -12,6 +12,7 @@ import time
 
 import schedule
 import tqdm
+import secrets
 
 # req
 
@@ -705,19 +706,21 @@ def upload_reel_job(path, caption):
 
 
 def schedule_video_uploads(paths, captions, upload_interval_minutes):
-    index = 0
 
     while True:
         # Get the current video path and caption
-        path = paths[index]
-        caption = captions[index]
+        pathIndex = secrets.randbelow(len(paths))
+        captionIndex = secrets.randbelow(len(captions))
+
+        path = paths[pathIndex]
+        caption = captions[captionIndex]
 
         # Start a new thread to upload the current video
         thread = threading.Thread(target=upload_reel_job, args=(path, caption))
         thread.start()
 
         # Move to the next video (circular list)
-        index = (index + 1) % len(paths)
+        # index = (index + 1) % len(paths)
 
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
         print(f"\r\033[36mCurrent Time: {current_time}", end="")
@@ -735,8 +738,14 @@ def upload_reel_multi_time(
 
         # Process paths_input (either from file or manual input)
         if paths_input.lower() == "file":
-            # Load video paths from a JSON file
+        # Load video paths from a JSON file
             with open("./videos_path.json", "r") as file:
+                data = json.load(file)
+                if "videos_path" in data:
+                    paths = data["videos_path"]
+        elif paths_input.lower() == "file2":
+            # Load video paths from another JSON file
+            with open("./videos_path2.json", "r") as file:
                 data = json.load(file)
                 if "videos_path" in data:
                     paths = data["videos_path"]
