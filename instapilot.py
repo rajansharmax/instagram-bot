@@ -275,25 +275,25 @@ def follow_user_list(usernames):
                 print(f"\n\033[36m Trying to Follow User: {usertof}")
                 response = cl.user_follow(y)
                 print("\n\033[36m User Followed !")
-                countdown_timer(60)  # Wait 1 minute before retrying
+                countdown_timer(120)  # Wait 1 minute before retrying
 
                 # Check if response is valid and can be decoded
                 try:
                     json_data = response
                     print(" User Followed Successfully!", json_data)
-                    # Wait 30 seconds after a successful follow
-                    countdown_timer(30)
+                    # Wait 60 seconds after a successful follow
+                    countdown_timer(120)
                 except json.JSONDecodeError:
                     print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
-                    countdown_timer(60)  # Wait 1 minute after a failed attempt
+                    countdown_timer(120)  # Wait 1 minute after a failed attempt
 
             except instagrapi.exceptions.UserNotFound:
                 print("\n\033[31m User Not Found! Waiting for 1 minute...")
-                countdown_timer(60)
+                countdown_timer(120)
 
             except instagrapi.exceptions.ClientNotFoundError:
                 print("\n\033[31m Client Not Found! Waiting for 1 minute...")
-                countdown_timer(60)
+                countdown_timer(120)
 
         print("\n\033[36m All Users Followed!")
         print("\n\033[36m Waiting for 1 hour...")
@@ -320,25 +320,25 @@ def unfollow_user_list(usernames):
                 print(f"\n\033[36m Trying to Follow User: {usertof}")
                 response = cl.user_unfollow(y)
                 print("\n\033[36m User UnFollowed !")
-                countdown_timer(60)  # Wait 1 minute before retrying
+                countdown_timer(120)  # Wait 1 minute before retrying
 
                 # Check if response is valid and can be decoded
                 try:
                     json_data = response
                     print(" User unFollowed Successfully!", json_data)
                     # Wait 30 seconds after a successful follow
-                    countdown_timer(30)
+                    countdown_timer(120)
                 except json.JSONDecodeError:
                     print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
-                    countdown_timer(60)  # Wait 1 minute after a failed attempt
+                    countdown_timer(120)  # Wait 1 minute after a failed attempt
 
             except instagrapi.exceptions.UserNotFound:
                 print("\n\033[31m User Not Found! Waiting for 1 minute...")
-                countdown_timer(60)
+                countdown_timer(120)
 
             except instagrapi.exceptions.ClientNotFoundError:
                 print("\n\033[31m Client Not Found! Waiting for 1 minute...")
-                countdown_timer(60)
+                countdown_timer(120)
 
         print("\n\033[36m All unUsers Followed!")
         print("\n\033[36m Waiting for 1 hour...")
