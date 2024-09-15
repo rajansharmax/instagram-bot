@@ -14,6 +14,10 @@ import schedule
 import tqdm
 import secrets
 
+import json
+import time
+import requests
+
 # req
 
 
@@ -42,12 +46,12 @@ InsPi = """
 \033[32m
  .___                 __        __________.__.__          __
  |   | ____   _______/  |______ \______   \__|  |   _____/  |_
- |   |/    \ /  ___/\   __\__  \ |     ___/  |  |  /  _ \   __\
+ |   |/    \ /  ___/\   __\__  \ |     ___/  |  |  /  _ \   _\_
  |   |   |  \/___ \  |  |  / __ \|    |   |  |  |_(  <_> )  |
  |___|___|  /____  > |__| (____  /____|   |__|____/\____/|__|
           \/     \/            \/
  <------------------------------------------------------------>
- | GitHub : rajansharmax            |       MIT License    		|
+ | GitHub : rajansharmax            |       MIT License       |
  | Instagram Automated Python Tool  |        Instagrapi       |
  +------------------------------------------------------------+
 """
@@ -157,6 +161,27 @@ def startSleepLoader(seconds):
         print(".", end="", flush=True)
         time.sleep(1)
 
+def countdown_timer(seconds):
+    while seconds:
+        mins, secs = divmod(seconds, 60)
+        timer = f"\033[33m Sleeping: {mins:02d}:{secs:02d} remaining "
+        print(timer, end="\r")
+        time.sleep(1)
+        seconds -= 1
+    sys.stdout.write("\033[0m")  # Reset color after countdown
+
+
+def conexit():
+    con = input("\n\033[34m Do You Want To Continue (Y/n) : ")
+
+    if con == "Y" or con == "y":
+        time.sleep(1)
+        os.system("clear")
+        Main()
+    else:
+        cne = "\n\033[32m [+] Thank You For Using !!"
+        typewriter(cne)
+
 
 # process
 
@@ -220,20 +245,8 @@ except instagrapi.exceptions.ProxyAddressIsBlocked:
     print("\n\033[31m [+] Instagram Has Blocked Your IP Address, Use Proxy To Bypass !")
 except KeyboardInterrupt:
     print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
+    conexit()
     sys.exit()
-
-
-def conexit():
-    con = input("\n\033[34m Do You Want To Continue (Y/n) : ")
-
-    if con == "Y" or con == "y":
-        time.sleep(1)
-        os.system("clear")
-        Main()
-    else:
-        cne = "\n\033[32m [+] Thank You For Using !!"
-        typewriter(cne)
-
 
 def follow(username):
     try:
@@ -246,28 +259,97 @@ def follow(username):
             print("\n\033[31m Error" + e)
     except KeyboardInterrupt:
         print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
+        conexit()
         sys.exit()
-
 
 def follow_user_list(usernames):
     try:
-        user_id = [cl.user_id_from_username(user) for user in usernames]
-        print(f"\n\033[36m Total Users : {len(user_id)}")
-        print("\n\033[36m Trying To Follow Users...")
+        print(f"\n\033[36m Total Users : {len(usernames)}")
+        print("\n\033[36m Trying to Follow Users...")
 
-        for usertof in user_id:
+        for usertof in usernames:
             try:
-                print(f"\n\033[36m Trying To Follow User : {usertof}")
-                cl.user_follow(usertof)
-                print(" User Followed !")
-                startSleepLoader(30)
+
+                x = usertof
+                y = cl.user_id_from_username(x)
+                print(f"\n\033[36m Trying to Follow User: {usertof}")
+                response = cl.user_follow(y)
+                print("\n\033[36m User Followed !")
+                countdown_timer(60)  # Wait 1 minute before retrying
+
+                # Check if response is valid and can be decoded
+                try:
+                    json_data = response
+                    print(" User Followed Successfully!", json_data)
+                    # Wait 30 seconds after a successful follow
+                    countdown_timer(30)
+                except json.JSONDecodeError:
+                    print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
+                    countdown_timer(60)  # Wait 1 minute after a failed attempt
+
             except instagrapi.exceptions.UserNotFound:
-                print("\n\033[31m User Not Found !")
+                print("\n\033[31m User Not Found! Waiting for 1 minute...")
+                countdown_timer(60)
+
             except instagrapi.exceptions.ClientNotFoundError:
-                print("\n\033[31m Client Not Found !")
+                print("\n\033[31m Client Not Found! Waiting for 1 minute...")
+                countdown_timer(60)
+
+        print("\n\033[36m All Users Followed!")
+        print("\n\033[36m Waiting for 1 hour...")
+        print("\n\033[36m Unfollowing Users...")
+        countdown_timer(3600)
+        print("\n\033[36m Unfollowing Users...")
+        unfollow_user_list(usernames)
+
     except KeyboardInterrupt:
-        print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
-        sys.exit()
+        print("\n\033[31m [+] Keyboard Interrupt: Script Ended!")
+        conexit()
+
+
+def unfollow_user_list(usernames):
+    try:
+        print(f"\n\033[36m Total Users : {len(usernames)}")
+        print("\n\033[36m Trying to unFollow Users...")
+
+        for usertof in usernames:
+            try:
+
+                x = usertof
+                y = cl.user_id_from_username(x)
+                print(f"\n\033[36m Trying to Follow User: {usertof}")
+                response = cl.user_unfollow(y)
+                print("\n\033[36m User UnFollowed !")
+                countdown_timer(60)  # Wait 1 minute before retrying
+
+                # Check if response is valid and can be decoded
+                try:
+                    json_data = response
+                    print(" User unFollowed Successfully!", json_data)
+                    # Wait 30 seconds after a successful follow
+                    countdown_timer(30)
+                except json.JSONDecodeError:
+                    print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
+                    countdown_timer(60)  # Wait 1 minute after a failed attempt
+
+            except instagrapi.exceptions.UserNotFound:
+                print("\n\033[31m User Not Found! Waiting for 1 minute...")
+                countdown_timer(60)
+
+            except instagrapi.exceptions.ClientNotFoundError:
+                print("\n\033[31m Client Not Found! Waiting for 1 minute...")
+                countdown_timer(60)
+
+        print("\n\033[36m All unUsers Followed!")
+        print("\n\033[36m Waiting for 1 hour...")
+        print("\n\033[36m following Users...")
+        countdown_timer(3600)
+        print("\n\033[36m following Users...")
+        follow_user_list(usernames)
+
+    except KeyboardInterrupt:
+        print("\n\033[31m [+] Keyboard Interrupt: Script Ended!")
+        conexit()
 
 
 def follow_user_listv2(usernames):
@@ -283,27 +365,6 @@ def follow_user_listv2(usernames):
                 startSleepLoader(60)
             except Exception as e:
                 print(f"\n\033[31m Error : {e}")
-    except KeyboardInterrupt:
-        print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
-        sys.exit()
-
-
-def unfollow_user_list(usernames):
-    try:
-        user_id = [cl.user_id_from_username(user) for user in usernames]
-        print(f"\n\033[36m Total Users : {len(user_id)}")
-        print("\n\033[36m Trying To Follow Users...")
-
-        for usertof in user_id:
-            try:
-                print(f"\n\033[36m Trying To UnFollow User : {usertof}")
-                cl.user_unfollow(usertof)
-                print(" User UnFollowed !")
-                startSleepLoader(30)
-            except instagrapi.exceptions.UserNotFound:
-                print("\n\033[31m User Not Found !")
-            except instagrapi.exceptions.ClientNotFoundError:
-                print("\n\033[31m Client Not Found !")
     except KeyboardInterrupt:
         print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
         sys.exit()
@@ -903,8 +964,8 @@ def Main():
  │ [8] Follow User Followers          │ [28] Upload Multiple reel on Time  │
  │ [9] Get User Id From Username      │ [29] Follow/Unfollow User V2       │
  │ [10] Get Username From User Id     │ [30] Find Viral Video Repost       │
- │ [11] User Following Into List      │                                    │
- │ [12] User Followers Into List      │                                    │
+ │ [11] User Following Into List      │ [31] auto Like and Comment hash    │
+ │ [12] User Followers Into List      │ [32] Auto Follow/Unfollow [working]│
  │ [13] Like Media                    │                                    │
  │ [14] Like All Media                │                                    │
  │ [15] Unlike Media                  │                                    │
@@ -914,7 +975,7 @@ def Main():
  │ [19] Download Video                │                                    │
  │ [20] Upload Post                   │                                    │
  ·————————————————————————————————————·—————————————————————————————————————
- │            \033[31m[00] Exit               \033[33m│              [99] Help             │
+ │ \033[31m[00] Exit          \033[33m│              [99] Help             │
  ·——————————————————————————————————————————————————————————————————————————
 	"""
     print(options)
@@ -1114,6 +1175,30 @@ def Main():
         hastag_reel_repost(hashtags, timeInMinutes)
         conexit()
 
+    elif opt == 31:
+        #  auto like / comment on hashtag
+        hashtags = input("\n\033[33m Enter hastags: ")
+        timeInMinutes = input("\n\033[33m Enter time in minutes: ")
+        # hastag_auto_like_comment(hashtags, timeInMinutes)
+        conexit()
+
+    elif opt == 32:
+        # Auto Follow/Unfollow Users list from file
+        followuserlist = input("\nLoad last user details (y/n): ").strip().lower()
+
+        if followuserlist == "y":
+            followuserlist = load_usernames()
+
+            followOrUnfollow = (
+                input("\nFollow users or Unfollow users (f/u): ").strip().lower()
+            )
+
+            if followOrUnfollow == "f":
+                ful = follow_user_list(followuserlist)
+                conexit()
+            else:
+                ful = unfollow_user_list(followuserlist)
+                conexit()
     elif opt == 00:
         time.sleep(0.5)
         exit = "\n\033[32m [+] Thank You For Using !!"
@@ -1132,5 +1217,6 @@ def Main():
 
 Main()
 
-cl.logout()
+# cl.logout()
+conexit()
 # ending
