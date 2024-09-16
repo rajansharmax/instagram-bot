@@ -156,6 +156,14 @@ def load_usernames():
     except FileNotFoundError:
         return None, None
 
+def load_usernames_ids():
+    try:
+        with open("user_ids_custom.json", "r") as f:
+            data = json.load(f)
+            return data["usernames"]
+    except FileNotFoundError:
+        return None, None
+
 
 def startSleepLoader(seconds):
     for _ in range(seconds):
@@ -263,50 +271,47 @@ def follow(username):
         conexit()
         sys.exit()
 
+
 def follow_user_list(usernames):
     random_minutes = secrets.randbelow(6) + 5
+    print(f"\n\033[36m Total Users: {len(usernames)}")
+    print("\n\033[36m Trying to Follow Users...")
+
     try:
-        print(f"\n\033[36m Total Users : {len(usernames)}")
-        print("\n\033[36m Trying to Follow Users...")
+        for username in usernames:
+            # try:
+            #     user_id = cl.user_id_from_username(username)
+            # except instagrapi.exceptions.UserNotFound:
+            #     print("\n\033[31m User Not Found! Waiting for 1 minute...")
+            #     countdown_timer(60)
+            #     continue
+            # except instagrapi.exceptions.ClientJSONDecodeError:
+            #     print("\n\033[31m Client JSONDecodeError! Waiting for 1 minute...")
+            #     countdown_timer(60)
+            #     continue
+            # except Exception as e:
+            #     print(f"\n\033[31m Error: {e}")
+            #     continue
 
-        for usertof in usernames:
+            print(f"\n\033[36m Trying to Follow User: {username}")
             try:
-
-                x = usertof
-                y = cl.user_id_from_username(x)
-                print(f"\n\033[36m Trying to Follow User: {usertof}")
-                response = cl.user_follow(y)
-                print("\n\033[36m User Followed !")
-                countdown_timer(random_minutes * 60)  # Wait 1 minute before retrying
-
-                # Check if response is valid and can be decoded
-                try:
-                    json_data = response
-                    print(" User Followed Successfully!", json_data)
-                    # Wait 60 seconds after a successful follow
-                    countdown_timer(random_minutes * 60)
-                except json.JSONDecodeError:
-                    print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
-                    countdown_timer(random_minutes * 60)  # Wait 1 minute after a failed attempt
-
-            except instagrapi.exceptions.UserNotFound:
-                print("\n\033[31m User Not Found! Waiting for 1 minute...")
-                countdown_timer(random_minutes * 60)
+                response = cl.user_follow(username)
+                json_data = response  # Ensure response is valid JSON
+                print(" User Followed Successfully!", json_data)
+            except json.JSONDecodeError:
+                print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
             except instagrapi.exceptions.ClientNotFoundError:
                 print("\n\033[31m Client Not Found! Waiting for 1 minute...")
-                countdown_timer(random_minutes * 60)
             except instagrapi.exceptions.ClientLoginRequired:
                 print("\n\033[31m Client Login Required! Waiting for 1 minute...")
-                countdown_timer(random_minutes * 60)
             except instagrapi.exceptions.ClientJSONDecodeError:
                 print("\n\033[31m ClientJSONDecodeError: Response was not JSON. Retrying...")
-                countdown_timer(random_minutes * 60)
-                continue
+
+            countdown_timer(random_minutes * 60)  # Wait before retrying
 
         print("\n\033[36m All Users Followed!")
         print("\n\033[36m Waiting for 1 hour...")
-        print("\n\033[36m Unfollowing Users...")
-        countdown_timer(3600)
+        countdown_timer(3600)  # Wait for 1 hour before unfollowing
         print("\n\033[36m Unfollowing Users...")
         unfollow_user_list(usernames)
 
@@ -314,56 +319,48 @@ def follow_user_list(usernames):
         print("\n\033[31m [+] Keyboard Interrupt: Script Ended!")
         conexit()
 
-
 def unfollow_user_list(usernames):
     random_minutes = secrets.randbelow(6) + 5
+    print(f"\n\033[36m Total Users: {len(usernames)}")
+    print("\n\033[36m Trying to Follow Users...")
+
     try:
-        print(f"\n\033[36m Total Users : {len(usernames)}")
-        print("\n\033[36m Trying to unFollow Users...")
+        for username in usernames:
+            # try:
+            #     user_id = cl.user_id_from_username(username)
+            # except instagrapi.exceptions.UserNotFound:
+            #     print("\n\033[31m User Not Found! Waiting for 1 minute...")
+            #     countdown_timer(60)
+            #     continue
+            # except instagrapi.exceptions.ClientJSONDecodeError:
+            #     print("\n\033[31m Client JSONDecodeError! Waiting for 1 minute...")
+            #     countdown_timer(60)
+            #     continue
+            # except Exception as e:
+            #     print(f"\n\033[31m Error: {e}")
+            #     continue
 
-        for usertof in usernames:
+            print(f"\n\033[36m Trying to Follow User: {username}")
             try:
-
-                x = usertof
-                y = cl.user_id_from_username(x)
-                print(f"\n\033[36m Trying to Follow User: {usertof}")
-                response = cl.user_unfollow(y)
-                print("\n\033[36m User UnFollowed !")
-                countdown_timer(random_minutes * 60)  # Wait 1 minute before retrying
-
-                # Check if response is valid and can be decoded
-                try:
-                    json_data = response
-                    print(" User unFollowed Successfully!", json_data)
-                    # Wait 30 seconds after a successful follow
-                    countdown_timer(random_minutes * 60)
-                except json.JSONDecodeError:
-                    print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
-                    countdown_timer(random_minutes * 60)  # Wait 1 minute after a failed attempt
-
-            except instagrapi.exceptions.UserNotFound:
-                print("\n\033[31m User Not Found! Waiting for 1 minute...")
-                countdown_timer(random_minutes * 60)
-
+                response = cl.user_unfollow(username)
+                json_data = response  # Ensure response is valid JSON
+                print(" User Followed Successfully!", json_data)
+            except json.JSONDecodeError:
+                print("\n\033[31m JSONDecodeError: Response was not JSON. Retrying...")
             except instagrapi.exceptions.ClientNotFoundError:
                 print("\n\033[31m Client Not Found! Waiting for 1 minute...")
-                countdown_timer(random_minutes * 60)
             except instagrapi.exceptions.ClientLoginRequired:
                 print("\n\033[31m Client Login Required! Waiting for 1 minute...")
-                countdown_timer(random_minutes * 60)
             except instagrapi.exceptions.ClientJSONDecodeError:
                 print("\n\033[31m ClientJSONDecodeError: Response was not JSON. Retrying...")
-                countdown_timer(random_minutes * 60)
-                continue
 
-        print("\n\033[36m All Users UnFollowed!")
+            countdown_timer(random_minutes * 60)  # Wait before retrying
 
-        print("\n\033[36m All unUsers Followed!")
+        print("\n\033[36m All Users Followed!")
         print("\n\033[36m Waiting for 1 hour...")
-        print("\n\033[36m following Users...")
-        countdown_timer(3600)
-        print("\n\033[36m following Users...")
-        follow_user_list(usernames)
+        countdown_timer(3600)  # Wait for 1 hour before unfollowing
+        print("\n\033[36m Unfollowing Users...")
+        unfollow_user_list(usernames)
 
     except KeyboardInterrupt:
         print("\n\033[31m [+] Keyboard Interrupt: Script Ended!")
@@ -539,10 +536,28 @@ def get_user_id_from_username(target):
         print("\n\033[31m Please Try Again After Few Minutes !")
     except KeyboardInterrupt:
         print("\n\033[31m [+] Keyboard Interrupt : Script Ended !")
-        sys.exit()
-    except instagrapi.exceptions.UserNotFound:
-        print("\n\033[31m User Not Found !")
+        conexit()
 
+def get_user_ids_from_usernames(usernames, file_name='users_ids.json'):
+    try:
+        users_ids = {}
+        for username in usernames:
+            user_id = cl.user_id_from_username(username)
+            users_ids[username] = user_id
+            print(f"\n\033[36m User_Id : {user_id}")
+            countdown_timer(120)
+        # Save the user IDs to a JSON file
+        with open(file_name, 'w') as json_file:
+            json.dump(users_ids, json_file, indent=4)
+        print(f"\n\033[32m User IDs saved to {file_name} successfully!")
+
+    except instagrapi.exceptions.UserNotFound:
+        print("\033[31m User Not Found!")
+    except instagrapi.exceptions.PleaseWaitFewMinutes:
+        print("\n\033[31m Please Try Again After Few Minutes!")
+    except KeyboardInterrupt:
+        print("\n\033[31m [+] Keyboard Interrupt : Script Ended!")
+        conexit()
 
 def get_username_from_user_id(target):
     try:
@@ -984,7 +999,7 @@ def Main():
  │ [10] Get Username From User Id     │ [30] Find Viral Video Repost       │
  │ [11] User Following Into List      │ [31] auto Like and Comment hash    │
  │ [12] User Followers Into List      │ [32] Auto Follow/Unfollow [working]│
- │ [13] Like Media                    │                                    │
+ │ [13] Like Media                    │ [33] GET UsersIds from File        │
  │ [14] Like All Media                │                                    │
  │ [15] Unlike Media                  │                                    │
  │ [16] Unlike All Media              │                                    │
@@ -1202,10 +1217,10 @@ def Main():
 
     elif opt == 32:
         # Auto Follow/Unfollow Users list from file
-        followuserlist = input("\nLoad last user details (y/n): ").strip().lower()
+        followuserlist = input("\nLoad usernames from file (y/n): ").strip().lower()
 
         if followuserlist == "y":
-            followuserlist = load_usernames()
+            followuserlist = load_usernames_ids()
 
             followOrUnfollow = (
                 input("\nFollow users or Unfollow users (f/u): ").strip().lower()
@@ -1217,6 +1232,22 @@ def Main():
             else:
                 ful = unfollow_user_list(followuserlist)
                 conexit()
+
+        else:
+            username = input("\n\033[33m Enter username: ")
+            ful = follow_user_list(username)
+            conexit()
+
+    elif opt == 33:
+        #  get users id from usersnames
+        followuserlist = input("\nLoad usersnames details (y/n): ").strip().lower()
+
+        if followuserlist == "y":
+            followuserlist = load_usernames()
+            get_user_ids_from_usernames(followuserlist)
+            conexit()
+        else:
+            conexit()
     elif opt == 00:
         time.sleep(0.5)
         exit = "\n\033[32m [+] Thank You For Using !!"
