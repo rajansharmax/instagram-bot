@@ -273,7 +273,7 @@ def follow(username):
 
 
 def follow_user_list(usernames):
-    random_minutes = secrets.randbelow(6) + 5
+    random_minutes = secrets.randbelow(6) + 15
     print(f"\n\033[36m Total Users: {len(usernames)}")
     print("\n\033[36m Trying to Follow Users...")
 
@@ -320,7 +320,7 @@ def follow_user_list(usernames):
         conexit()
 
 def unfollow_user_list(usernames):
-    random_minutes = secrets.randbelow(6) + 5
+    random_minutes = secrets.randbelow(6) + 15
     print(f"\n\033[36m Total Users: {len(usernames)}")
     print("\n\033[36m Trying to Follow Users...")
 
