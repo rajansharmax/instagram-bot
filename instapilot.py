@@ -15,8 +15,6 @@ import schedule
 import tqdm
 import secrets
 
-import json
-import time
 import requests
 
 # req
@@ -823,29 +821,18 @@ def schedule_video_uploads(paths, captions, upload_interval_minutes):
 
 
 def upload_reel_multi_time(
-    paths_input: str, caption_input, upload_interval_minutes_str
+    selected_file_path: str, caption_input, upload_interval_minutes_str
 ):
     try:
         paths = []
         captions = []
         upload_interval_minutes = int(upload_interval_minutes_str)
 
-        # Process paths_input (either from file or manual input)
-        if paths_input.lower() == "file":
-        # Load video paths from a JSON file
-            with open("./videos_path.json", "r") as file:
-                data = json.load(file)
-                if "videos_path" in data:
-                    paths = data["videos_path"]
-        elif paths_input.lower() == "file2":
-            # Load video paths from another JSON file
-            with open("./videos_path2.json", "r") as file:
-                data = json.load(file)
-                if "videos_path" in data:
-                    paths = data["videos_path"]
-        else:
-            # Manual input of comma-separated video URLs
-            paths = paths_input.split(",")
+        # Process paths_input (read from the selected JSON file)
+        with open(selected_file_path, "r") as file:
+            data = json.load(file)
+            if "videos_path" in data:
+                paths = data["videos_path"]
 
         # Process caption_input (either from file or manual input)
         if caption_input.lower() == "file":
@@ -1168,21 +1155,52 @@ def Main():
         conexit()
 
     elif opt == 28:
-        paths_input_option = input(
-            "\n\033[33m Use video paths from file? (file/manual): "
-        )
-        caption_input_option = input(
-            "\n\033[33m Use captions from file? (file/manual): "
-        )
-        upload_time = input("\n\033[33m Enter upload time in minutes: ")
-        if caption_input_option.lower() == "manual":
-            caption_text = input("\n\033[33m Enter caption to use for all videos: ")
-            upload_reel_multi_time(paths_input_option, caption_text, upload_time)
-        else:
-            upload_reel_multi_time(
-                paths_input_option, caption_input_option, upload_time
-            )
-        conexit()
+        # Display available video files to the user
+        try:
+            with open("videos_file.json", "r") as file:
+                data = json.load(file)
+                if "video_files" not in data:
+                    print("\n\033[31mError: No 'video_files' found in videos_file.json.")
+                    return
+
+                video_files = data["video_files"]
+                if not video_files:
+                    print("\n\033[31mError: No video files listed in videos_file.json.")
+                    return
+
+                print("\n\033[33mAvailable video files:")
+                for idx, video_file in enumerate(video_files, 1):
+                    print(f"{idx}. {video_file['name']}")
+
+                file_choice = int(input("\n\033[33mSelect a file by number: "))
+                if file_choice < 1 or file_choice > len(video_files):
+                    print("\n\033[31mError: Invalid choice.")
+                    return
+
+                # Get the selected file path
+                selected_file_path = video_files[file_choice - 1]["path"]
+                print(f"\n\033[32mSelected file: {selected_file_path}")
+
+                paths_input_option = "file"  # Force file mode since we're reading from file
+                caption_input_option = input(
+                    "\n\033[33m Use captions from file? (file/manual): "
+                )
+                upload_time = input("\n\033[33m Enter upload time in minutes: ")
+                if caption_input_option.lower() == "manual":
+                    caption_text = input(
+                        "\n\033[33m Enter caption to use for all videos: "
+                    )
+                    upload_reel_multi_time(
+                        selected_file_path, caption_text, upload_time
+                    )
+                else:
+                    upload_reel_multi_time(
+                        selected_file_path, caption_input_option, upload_time
+                    )
+                conexit()
+
+        except Exception as e:
+            print(f"\n\033[31mError: {str(e)}")
 
     elif opt == 29:
         followuserlist = input("\nLoad last user details (y/n): ").strip().lower()
