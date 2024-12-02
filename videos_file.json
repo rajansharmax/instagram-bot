@@ -1,0 +1,12 @@
+{
+    "video_files": [
+        {
+            "name": "file1",
+            "path": "/Users/rajansharma/Sites/instagram-bot/videos_path.json"
+        },
+        {
+            "name": "file2",
+            "path": "/Users/rajansharma/Sites/instagram-bot/videos_path2.json"
+        }
+    ]
+}
