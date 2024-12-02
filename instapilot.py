@@ -14,7 +14,7 @@ import instagrapi.exceptions
 import schedule
 import tqdm
 import secrets
-
+import itertools
 import requests
 
 # req
@@ -797,38 +797,63 @@ def upload_reel_job(path, caption):
         print("\n\033[31mStatus: Media Not Uploaded !")
 
 
-def schedule_video_uploads(paths, captions, upload_interval_minutes):
+def is_internet_available():
+    """
+    Checks if the internet connection is available.
+    """
+    try:
+        requests.get("https://www.google.com", timeout=5)
+        return True
+    except requests.RequestException:
+        return False
 
+def show_loader(duration):
+    """
+    Displays a loader animation for the specified duration.
+    """
+    spinner = itertools.cycle(['|', '/', '-', '\\'])
+    end_time = time.time() + duration
+    while time.time() < end_time:
+        print(f"\r\033[33m Loading... {next(spinner)}", end='', flush=True)
+        time.sleep(0.2)
+    print("\r\033[32m Done!                 ", flush=True)
+
+
+def schedule_video_uploads(paths, captions, upload_interval_minutes):
+    """
+    Schedules the video uploads at specified intervals with random selection.
+    """
     while True:
-        # Get the current video path and caption
+        # Randomly select a video path and caption
         pathIndex = secrets.randbelow(len(paths))
         captionIndex = secrets.randbelow(len(captions))
 
         path = paths[pathIndex]
         caption = captions[captionIndex]
 
-        # Start a new thread to upload the current video
+        # Start a new thread to upload the selected video
         thread = threading.Thread(target=upload_reel_job, args=(path, caption))
         thread.start()
 
-        # Move to the next video (circular list)
-        # index = (index + 1) % len(paths)
+        # Sleep for the upload interval (in minutes) before scheduling the next upload
+        remaining_time = upload_interval_minutes * 60  # Convert to seconds
+        while remaining_time > 0:
+            mins, secs = divmod(remaining_time, 60)
+            print(f"\r\033[36mNext video upload in: {mins:02d}:{secs:02d}", end="", flush=True)
+            time.sleep(1)
+            remaining_time -= 1
 
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        print(f"\r\033[36mCurrent Time: {current_time}", end="")
-        # Sleep for the upload interval (1 minute) before scheduling the next video
-        time.sleep(upload_interval_minutes * 60)
+        # Clear the countdown after the sleep time
+        print("\r\033[36mNext video upload in: 00:00 ", end="", flush=True)
 
-
-def upload_reel_multi_time(
-    selected_file_path: str, caption_input, upload_interval_minutes_str
-):
+def upload_reel_multi_time(selected_file_path: str, caption_input, upload_interval_minutes_str):
     try:
         paths = []
         captions = []
         upload_interval_minutes = int(upload_interval_minutes_str)
 
         # Process paths_input (read from the selected JSON file)
+        print("\n\033[33m Reading video paths...")
         with open(selected_file_path, "r") as file:
             data = json.load(file)
             if "videos_path" in data:
@@ -836,7 +861,7 @@ def upload_reel_multi_time(
 
         # Process caption_input (either from file or manual input)
         if caption_input.lower() == "file":
-            # Load captions from a file (assuming it's a JSON file with a "captions" list)
+            print("\n\033[33m Reading captions from file...")
             with open("./captions.json", "r") as file:
                 captions_data = json.load(file)
                 if "captions" in captions_data:
@@ -855,10 +880,12 @@ def upload_reel_multi_time(
             return
 
         # Start scheduling video uploads
+        print("\n\033[32m Starting scheduled uploads...\n")
         schedule_video_uploads(paths, captions, upload_interval_minutes)
 
     except Exception as e:
         print(f"\n\033[31mError: {str(e)}")
+
 
 
 def hastag_reel_repost(hashtags: str, interval_minutes: int):
